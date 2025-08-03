@@ -1,2 +1,2 @@
 # Intership-
-Tech
+During my internship, I gained valuable practical experience and enhanced my technical as well as soft skills. I had the opportunity to apply my classroom knowledge to real-world tasks, which helped me deepen my understanding of the subject. I learned how to work in a professional environment, collaborate with team members, meet deadlines, and handle responsibilities effectively. This experience has improved my problem-solving abilities, boosted my confidence, and given me better clarity about my career goals. Overall, the internship was a significant step in my professional development
