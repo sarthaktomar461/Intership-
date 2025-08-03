@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Countdown Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #808080;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #progressBarContainer {
+      width: 80%;
+      height: 12px;
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 100%;
+      background-color: limegreen;
+      transition: width 1s linear;
+    }
+
+    #timer {
+      font-size: 60px;
+      margin-bottom: 20px;
+      padding: 20px 40px;
+      border: 4px solid white;
+      border-radius: 15px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      transition: all 0.4s ease, color 0.5s ease;
+    }
+
+    #timer.blink {
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2e7d32;
+      transform: scale(1.05);
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .time-input {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    input {
+      padding: 8px;
+      width: 80px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+    }
+
+    label {
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+    }
+
+    @media (max-width: 500px) {
+      .buttons, .time-input {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      input, button {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Time Input -->
+  <div class="time-input">
+    <label>Minutes: <input type="number" id="minutesInput" min="0" value="1"></label>
+    <label>Seconds: <input type="number" id="secondsInput" min="0" max="59" value="0"></label>
+    <button onclick="setCustomTime()">Set Time</button>
+  </div>
+
+  <!-- Progress Bar -->
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+  </div>
+
+  <!-- Timer Display -->
+  <h1 id="timer">01:00</h1>
+
+  <!-- Buttons -->
+  <div class="buttons">
+    <button id="startBtn" onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+    <button onclick="resetTimer()">Reset</button>
+    <button onclick="restartTimer()">Restart</button>
+  </div>
+
+  <!-- Sounds -->
+  <audio id="tickSound" src="tick.mp3" preload="auto"></audio>
+  <audio id="alarmSound" src="alarm.mp3" preload="auto"></audio>
+
+  <script>
+    let startTime = 60;
+    let timeLeft = startTime;
+    let timerInterval = null;
+
+    const timerDisplay = document.getElementById("timer");
+    const tickSound = document.getElementById("tickSound");
+    const alarmSound = document.getElementById("alarmSound");
+    const progressBar = document.getElementById("progressBar");
+    const startBtn = document.getElementById("startBtn");
+
+    function updateDisplay() {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function updateVisuals() {
+      if (timeLeft <= 10) {
+        timerDisplay.style.color = "red";
+        timerDisplay.classList.add("blink");
+      } else if (timeLeft <= 20) {
+        timerDisplay.style.color = "orange";
+        timerDisplay.classList.remove("blink");
+      } else if (timeLeft <= 30) {
+        timerDisplay.style.color = "yellow";
+        timerDisplay.classList.remove("blink");
+      } else if (timeLeft <= 40) {
+        timerDisplay.style.color = "#00ffff";
+        timerDisplay.classList.remove("blink");
+      } else if (timeLeft <= 50) {
+        timerDisplay.style.color = "#90ee90";
+        timerDisplay.classList.remove("blink");
+      } else {
+        timerDisplay.style.color = "white";
+        timerDisplay.classList.remove("blink");
+      }
+
+      const percent = (timeLeft / startTime) * 100;
+      progressBar.style.width = `${percent}%`;
+    }
+
+    function startTimer() {
+      if (timerInterval) return;
+
+      startBtn.disabled = true;
+
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          tickSound.currentTime = 0;
+          tickSound.play();
+          updateDisplay();
+          updateVisuals();
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          alarmSound.play();
+          startBtn.disabled = false;
+          updateVisuals();
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      startBtn.disabled = false;
+    }
+
+    function resetTimer() {
+      stopTimer();
+      timeLeft = startTime;
+      updateDisplay();
+      updateVisuals();
+    }
+
+    function restartTimer() {
+      resetTimer();
+      startTimer();
+    }
+
+    function setCustomTime() {
+      const mins = parseInt(document.getElementById("minutesInput").value) || 0;
+      const secs = parseInt(document.getElementById("secondsInput").value) || 0;
+
+      if (mins < 0 || secs < 0 || secs > 59) {
+        alert("Please enter valid minutes and seconds (0-59)");
+        return;
+      }
+
+      startTime = (mins * 60) + secs;
+      timeLeft = startTime;
+      resetTimer();
+    }
+
+    // Initialize
+    updateDisplay();
+    updateVisuals();
+  </script>
+
+</body>
+</html>
